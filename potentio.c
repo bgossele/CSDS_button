@@ -26,6 +26,8 @@ struct state{
 	looci_event_t* event;
 };
 
+//For receiving events, see ~/looci/looci2-contiki/components/tutorialComponents/tempFilter/tempFilter.c
+
 #define LOOCI_NR_PROPERTIES 0
 LOOCI_PROPERTIES();
 COMPONENT_INTERFACES(POTENTIO_READING); 
