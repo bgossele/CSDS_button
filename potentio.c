@@ -22,7 +22,6 @@
 #endif
 
 struct state{
-	int reading;
 	looci_event_t* event;
 };
 
@@ -32,7 +31,7 @@ struct state{
 LOOCI_PROPERTIES();
 COMPONENT_INTERFACES(POTENTIO_READING); 
 COMPONENT_RECEPTACLES(ANY_EVENT)); 
-LOOCI_COMPONENT("potentiometer sampler", struct state);
+LOOCI_COMPONENT("potentiometer reader", struct state);
 
 static uint8_t activate(struct state* compState, void* data){
 	printf("potentiometer component activated\n");
@@ -42,14 +41,12 @@ static uint8_t activate(struct state* compState, void* data){
 static uint8_t event(struct state* compState, core_looci_event_t* event){
 	PRINT_LN("received ev %u",event->type);
 	if(event->type == POTENTIO_READING){
-		PRINT_LN("is ev %u",event->type);
-		PRINT_LN("publish ev %u",event->type);
 		PUBLISH_EVENT(POTENTIO_READING, range_potentiometer(readADC(0)), 1);
 	}
 	return 1;
 }
 
-uint8_t range_potentiometer(value){
+uint8_t range_potentiometer(int value){
 	if (value <= 210)
 		return 1;
 	else if (value <= 500)

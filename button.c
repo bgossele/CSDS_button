@@ -30,7 +30,7 @@ struct state{
 LOOCI_PROPERTIES();
 COMPONENT_INTERFACES(BUTTON_PRESSED, POTENTIO_REQUEST);
 COMPONENT_RECEPTACLES(POTENTIO_READING);
-LOOCI_COMPONENT("code reader", struct state);
+LOOCI_COMPONENT("button listener", struct state);
 
 static uint8_t activate(struct state* compState, void* data){
 	SREG |= 10000000;
@@ -43,7 +43,6 @@ static uint8_t activate(struct state* compState, void* data){
 static uint8_t event(struct state* compState, void* data){
 	PRINT_LN("received ev %u",event->type);
 	if(event->type == POTENTIO_READING){
-		PRINT_LN("is ev %u",event->type);
 		compState->code &= (event->payload << (compState->digits_sampled)*2); 
 
 		if(compState->digits_sampled == 3)		
@@ -58,10 +57,6 @@ static uint8_t event(struct state* compState, void* data){
 ISR(INT0_vect){
 	printf("button pressed!\n");
 	PUBLISH_EVENT(POTENTIO_REQUEST);
-}
-
-void update_code(value){
-	code = (code % 1000) * 10 + range_potentiometer(value);
 }
 
 COMP_FUNCS_INIT //THIS LINE MUST BE PRESENT
