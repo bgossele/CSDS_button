@@ -21,44 +21,50 @@
 #endif
 
 struct state{
-	int code;
-	int digits_sampled;
+	uint8_t code;
+	uint8_t digits_sampled;
 	looci_event_t* event;
 };
 
-//For receiving events, see ~/looci/looci2-contiki/components/tutorialComponents/tempFilter/tempFilter.c
-
 #define LOOCI_NR_PROPERTIES 0
 LOOCI_PROPERTIES();
-COMPONENT_INTERFACES(BUTTON_PRESSED, POTENTIO_REQUEST); //Button_pressed, potentio_request
-COMPONENT_RECEPTACLES(POTENTIO_READING); //Potentio_reading
+COMPONENT_INTERFACES(BUTTON_PRESSED, POTENTIO_REQUEST);
+COMPONENT_RECEPTACLES(POTENTIO_READING);
 LOOCI_COMPONENT("code reader", struct state);
-COMPONENT_THREAD( ev, data)
-{
-	COMPONENT_BEGIN(struct state,compState);
-	compState->code = 0;
-	ETIMER_SET(&compState->et, CLOCK_SECOND * 10);
+
+static uint8_t activate(struct state* compState, void* data){
 	SREG |= 10000000;
 	EICRA = 0x03;
 	EIMSK = 0x01;
+	printf("button component activated\n");
+	return 1;
+}
 
-	while(1) {
-		LOOCI_WAIT_EVENT(compState->event,
-			ETIMER_EXPIRED(compState->et));
-		// create dummy value when timer expires
+static uint8_t event(struct state* compState, void* data){
+	PRINT_LN("received ev %u",event->type);
+	if(event->type == POTENTIO_READING){
+		PRINT_LN("is ev %u",event->type);
+		compState->code &= (event->payload << (compState->digits_sampled)); 
+
+		if(compState->digits_sampled == 3)		
+			PUBLISH_EVENT(BUTTON_PRESSED, compState->code, 1);
+		}
 		compState->digits_sampled += 1;
-		PUBLISH_EVENT(BUTTON_PRESSED, (uint8_t)&compState->light,
-		 sizeof(compState->light));
+		compState->digits_sampled %= 4;
 	}
-	COMPONENT_END();
+	return 1;
 }
 
 ISR(INT0_vect){
 	printf("button pressed!\n");
 	PUBLISH_EVENT(POTENTIO_REQUEST);
-	printf("new code = %d\n", code);
 }
 
 void update_code(value){
 	code = (code % 1000) * 10 + range_potentiometer(value);
 }
+
+COMP_FUNCS_INIT //THIS LINE MUST BE PRESENT
+COMP_FUNC_ACTIVATE(activate)
+COMP_FUNC_EVENT(event)
+COMP_FUNCS_END(NULL)//THIS LINE MUST BE PRESENT

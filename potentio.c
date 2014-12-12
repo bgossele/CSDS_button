@@ -33,21 +33,23 @@ LOOCI_PROPERTIES();
 COMPONENT_INTERFACES(POTENTIO_READING); 
 COMPONENT_RECEPTACLES(ANY_EVENT)); 
 LOOCI_COMPONENT("potentiometer sampler", struct state);
-COMPONENT_THREAD( ev, data)
-{
-	COMPONENT_BEGIN(struct state,compState);
-	compState->reading = 0;
-	while(1) {
-		LOOCI_WAIT_EVENT();
-		// create dummy value when timer expires
-		compState->reading = range_potentiometer(readADC(0));
-		PUBLISH_EVENT(POTENTIO_READING, (uint8_t)&compState->reading,
-		 sizeof(compState->reading));
-	}
-	COMPONENT_END();
+
+static uint8_t activate(struct state* compState, void* data){
+	printf("potentiometer component activated\n");
+	return 1;
 }
 
-int range_potentiometer(value){
+static uint8_t event(struct state* compState, core_looci_event_t* event){
+	PRINT_LN("received ev %u",event->type);
+	if(event->type == POTENTIO_READING){
+		PRINT_LN("is ev %u",event->type);
+		PRINT_LN("publish ev %u",event->type);
+		PUBLISH_EVENT(POTENTIO_READING, range_potentiometer(readADC(0)), 1);
+	}
+	return 1;
+}
+
+uint8_t range_potentiometer(value){
 	if (value <= 210)
 		return 1;
 	else if (value <= 500)
@@ -57,3 +59,8 @@ int range_potentiometer(value){
 	else
 		return 4;
 }
+
+COMP_FUNCS_INIT //THIS LINE MUST BE PRESENT
+COMP_FUNC_ACTIVATE(activate)
+COMP_FUNC_EVENT(event)
+COMP_FUNCS_END(NULL)//THIS LINE MUST BE PRESENT
