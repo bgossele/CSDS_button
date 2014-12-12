@@ -44,7 +44,7 @@ static uint8_t event(struct state* compState, void* data){
 	PRINT_LN("received ev %u",event->type);
 	if(event->type == POTENTIO_READING){
 		PRINT_LN("is ev %u",event->type);
-		compState->code &= (event->payload << (compState->digits_sampled)); 
+		compState->code &= (event->payload << (compState->digits_sampled)*2); 
 
 		if(compState->digits_sampled == 3)		
 			PUBLISH_EVENT(BUTTON_PRESSED, compState->code, 1);
