@@ -5,7 +5,7 @@
 #include <avr/pgmspace.h>
 #include "sensors.h"
 #include "event-types.h"
-#include "button_events.h"
+//#include "button_events.h"
 #include "adc.h"
 
 #ifdef CONTIKI_TARGET_AVR_RAVEN
@@ -20,6 +20,10 @@
 #else
 #include "nodebug.h"
 #endif
+
+#define POTENTIO_READING 500
+#define POTENTIO_REQUEST 501
+#define BUTTON_PRESSED 413
 
 struct state{
 	looci_event_t* event;

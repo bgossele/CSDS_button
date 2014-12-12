@@ -5,7 +5,7 @@
 #include <avr/pgmspace.h>
 #include "sensors.h"
 #include "event-types.h"
-#include "button-events.h"
+//#include "button-events.h"
 
 #ifdef CONTIKI_TARGET_AVR_RAVEN
 #include "raven-msg.h"
@@ -19,6 +19,10 @@
 #else
 #include "nodebug.h"
 #endif
+
+#define POTENTIO_READING 500
+#define POTENTIO_REQUEST 501
+#define BUTTON_PRESSED 413
 
 struct state{
 	uint8_t code;
@@ -40,12 +44,16 @@ static uint8_t activate(struct state* compState, void* data){
 	return 1;
 }
 
-static uint8_t event(struct state* compState, void* data){
+static uint8_t event(struct state* compState, core_looci_event_t* event){
+	uint8_t offset;
+	uint8_t andBits;
 	PRINT_LN("received ev %u",event->type);
 	if(event->type == POTENTIO_READING){
-		compState->code &= (event->payload << (compState->digits_sampled)*2); 
+		offset = compState->digits_sampled*2;
+		andBits = event->payload << offset;
+		compState->code &= andBits; 
 
-		if(compState->digits_sampled == 3)		
+		if(compState->digits_sampled == 3){	
 			PUBLISH_EVENT(BUTTON_PRESSED, compState->code, 1);
 		}
 		compState->digits_sampled += 1;
@@ -56,7 +64,7 @@ static uint8_t event(struct state* compState, void* data){
 
 ISR(INT0_vect){
 	printf("button pressed!\n");
-	PUBLISH_EVENT(POTENTIO_REQUEST);
+	PUBLISH_EVENT(POTENTIO_REQUEST, void, 0);
 }
 
 COMP_FUNCS_INIT //THIS LINE MUST BE PRESENT
