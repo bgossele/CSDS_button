@@ -23,6 +23,7 @@
 #define POTENTIO_READING 500
 #define POTENTIO_REQUEST 501
 #define BUTTON_PRESSED 413
+#define LOOCI_COMPONENT_NAME button
 
 struct state{
 	uint8_t code;
@@ -49,12 +50,13 @@ static uint8_t event(struct state* compState, core_looci_event_t* event){
 	uint8_t andBits;
 	PRINT_LN("received ev %u",event->type);
 	if(event->type == POTENTIO_READING){
-		offset = compState->digits_sampled*2;
-		andBits = event->payload << offset;
+		offset = (compState->digits_sampled)*2;
+		//TODO test cast
+		andBits = (event->payload[0]) << offset;
 		compState->code &= andBits; 
 
 		if(compState->digits_sampled == 3){	
-			PUBLISH_EVENT(BUTTON_PRESSED, compState->code, 1);
+			PUBLISH_EVENT(BUTTON_PRESSED, &(compState->code), 1);
 		}
 		compState->digits_sampled += 1;
 		compState->digits_sampled %= 4;
@@ -63,8 +65,10 @@ static uint8_t event(struct state* compState, core_looci_event_t* event){
 }
 
 ISR(INT0_vect){
+	uint8_t t;
 	printf("button pressed!\n");
-	PUBLISH_EVENT(POTENTIO_REQUEST, void, 0);
+	//TODO 404 RANDOM
+	PUBLISH_EVENT(POTENTIO_REQUEST, &t, 0);
 }
 
 COMP_FUNCS_INIT //THIS LINE MUST BE PRESENT

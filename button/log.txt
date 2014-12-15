@@ -1,0 +1,6 @@
+make -f ../core/Makefile.looci loociCore.u > debug.txt
+
+##########welcome to looci contiki#############
+selected command: make
+execute make command with args:upload
+##########goodbye#############
