@@ -53,6 +53,8 @@ static uint8_t event(struct state* compState, core_looci_event_t* event){
 
 
 
+
+
 COMP_FUNCS_INIT //THIS LINE MUST BE PRESENT
 COMP_FUNC_ACTIVATE(activate)
 COMP_FUNC_EVENT(event)

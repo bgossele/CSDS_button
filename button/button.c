@@ -32,12 +32,14 @@ COMPONENT_INTERFACES(CODE_READ, RPC_REQUEST);
 COMPONENT_RECEPTACLES(RPC_REPLY);
 LOOCI_COMPONENT("button listener", struct state);
 
+static void printTheCode(uint8_t);
+
 static uint8_t activate(struct state* compState, void* data){
 	SREG |= 10000000;
 	EICRA = 0x03;
 	EIMSK = 0x01;
 	printf("button listener activated\n");
-	ETIMER_SET(&compState->et, CLOCK_SECOND);
+	ETIMER_SET(&compState->et, CLOCK_SECOND*0.2);
 	return 1;
 }
 
@@ -47,14 +49,15 @@ static uint8_t event(struct state* compState, core_looci_event_t* event){
 	printf("button received ev %u\n",event->type);
 	if(event->type == RPC_REPLY){
 		
-		printf("%d =c",*(event->payload));
+		printf("Input: %d \n",*(event->payload));
 		compState->code *= 4;
-		compState->code |= (*(event->payload)-1);		
+		compState->code |= (*(event->payload)-1);
+				
 
-		printf("%d\n",compState->code);
 
 		if(compState->digits_sampled == 3){	
 			PUBLISH_EVENT(CODE_READ, &(compState->code), 1);
+			printTheCode(compState->code);
 		}
 		compState->digits_sampled += 1;
 		compState->digits_sampled %= 4;
@@ -72,8 +75,22 @@ static uint8_t time(struct state* compState, void* data){
 }
 
 ISR(INT0_vect){
-	printf("button pressed!\n");
 	request=1;
+}
+
+static void printTheCode(uint8_t number) {
+	int number1;
+	int number2;
+	int number3;
+	int number4;
+	char str[5];
+    
+	number1 = (3 & (number >> 6))+1;
+	number2 = (3 & (number >> 4))+1;
+	number3 = (3 & (number >> 2))+1;
+	number4 = (3 & number)+1;
+	
+	printf("%d%d%d%d\n",number1,number2,number3,number4);
 }
 
 COMP_FUNCS_INIT //THIS LINE MUST BE PRESENT
