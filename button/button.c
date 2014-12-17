@@ -1,6 +1,5 @@
 #include "contiki.h"
 #include "looci.h"
-#include "utils.h"
 #include "timer_utils.h"
 #include "event-types.h"
 
@@ -21,7 +20,6 @@ struct state{
 	uint8_t digits_sampled;
 	uint8_t interrupt;
 	struct etimer et;
-	looci_event_t* event;
 };
 
 int request = 0;
@@ -39,7 +37,7 @@ static uint8_t activate(struct state* compState, void* data){
 	EICRA = 0x03;
 	EIMSK = 0x01;
 	printf("button listener activated\n");
-	ETIMER_SET(&compState->et, CLOCK_SECOND*0.2);
+	ETIMER_SET(&compState->et, CLOCK_SECOND*0.5);
 	return 1;
 }
 
@@ -53,14 +51,13 @@ static uint8_t event(struct state* compState, core_looci_event_t* event){
 		compState->code *= 4;
 		compState->code |= (*(event->payload)-1);
 				
+		compState->digits_sampled += 1;
 
-
-		if(compState->digits_sampled == 3){	
+		if(compState->digits_sampled == 4){	
 			PUBLISH_EVENT(CODE_READ, &(compState->code), 1);
 			printTheCode(compState->code);
+			compState->digits_sampled = 0;
 		}
-		compState->digits_sampled += 1;
-		compState->digits_sampled %= 4;
 	}
 	return 1;
 }

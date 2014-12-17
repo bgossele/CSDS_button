@@ -1,6 +1,5 @@
 #include "contiki.h"
 #include "looci.h"
-#include "utils.h"
 #include "event-types.h"
 #include "adc.h"
 
@@ -16,7 +15,6 @@
 #define LOOCI_COMPONENT_NAME potentio
 
 struct state{
-	looci_event_t* event;
 };
 
 #define LOOCI_NR_PROPERTIES 0
@@ -50,10 +48,6 @@ static uint8_t event(struct state* compState, core_looci_event_t* event){
 	}
 	return 1;
 }
-
-
-
-
 
 COMP_FUNCS_INIT //THIS LINE MUST BE PRESENT
 COMP_FUNC_ACTIVATE(activate)
